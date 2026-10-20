@@ -62,7 +62,7 @@ Camera ──► MediaPipe (in browser) ──► 33 body points
 
 ```
 ai-coach/
-├── web/                         ← Frontend (what users see)
+├── frontend/                    ← Next.js app (what users see)
 │   └── src/
 │       ├── app/                 ← Pages: /login, /workout, /session, /history, /plan, /profile
 │       ├── components/          ← Screen pieces, grouped by page
@@ -79,7 +79,7 @@ ai-coach/
 │           ├── coach/           ← When to speak, text-to-speech
 │           └── api/             ← Calls to the backend
 │
-├── api/                         ← Backend (server)
+├── backend/                     ← FastAPI server
 │   ├── app/
 │   │   ├── main.py              ← Starts the app and plugs in the routes
 │   │   ├── config.py            ← Settings from .env
@@ -94,7 +94,7 @@ ai-coach/
 └── .github/workflows/ci.yml     ← Runs all tests on every push
 ```
 
-**Where to start reading:** `web/src/lib/exercises/squat.ts` shows how a rep is detected, and `api/app/routes/workouts.py` shows how a workout is saved.
+**Where to start reading:** `frontend/src/lib/exercises/squat.ts` shows how a rep is detected, and `backend/app/routes/workouts.py` shows how a workout is saved.
 
 ---
 
@@ -125,7 +125,7 @@ Full interactive docs: `/docs` on the backend.
 **Backend:**
 
 ```bash
-cd api
+cd backend
 python -m venv venv
 venv\Scripts\activate          # Mac/Linux: source venv/bin/activate
 pip install -r requirements.txt
@@ -136,7 +136,7 @@ uvicorn app.main:app --reload  # http://localhost:8000
 **Frontend** (in a second terminal):
 
 ```bash
-cd web
+cd frontend
 npm install
 npm run dev                    # http://localhost:3000
 ```
@@ -144,8 +144,8 @@ npm run dev                    # http://localhost:3000
 **Tests:**
 
 ```bash
-cd api && pytest
-cd web && npm test
+cd backend && pytest
+cd frontend && npm test
 ```
 
 ---
