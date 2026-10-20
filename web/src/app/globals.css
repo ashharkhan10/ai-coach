@@ -31,6 +31,18 @@
   --font-display: var(--font-space-grotesk);
 }
 
+/* Tells the browser the app is dark, so its built-in parts
+   (number arrows, scrollbars, checkboxes) are drawn in dark colours too. */
+:root {
+  color-scheme: dark;
+}
+
+/* Highlighted (selected) text uses the brand lime instead of browser blue. */
+::selection {
+  background: var(--color-accent);
+  color: var(--color-ground);
+}
+
 body {
   background: var(--color-ground);
   color: var(--color-ink);
