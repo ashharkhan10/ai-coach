@@ -30,11 +30,15 @@ export function useWorkout(
 
   // Refs hold the latest values for the timer to read.
   const stateRef = useRef(state);
-  const liveRef = useRef<LiveNumbers>({ totalReps: 0, formScore: 100 });
+  const liveRef = useRef<LiveNumbers>({ totalReps: 0, formScore: 100, mainIssue: null });
   const detectorRef = useRef(detector);
 
   useEffect(() => {
-    liveRef.current = { totalReps: result?.reps ?? 0, formScore: result?.formScore ?? 100 };
+    liveRef.current = {
+      totalReps: result?.reps ?? 0,
+      formScore: result?.formScore ?? 100,
+      mainIssue: result?.mainIssue ?? null,
+    };
   }, [result]);
 
   useEffect(() => {

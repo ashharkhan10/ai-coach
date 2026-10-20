@@ -16,6 +16,7 @@ export type CompletedSet = {
   reps: number;
   durationSec: number;
   formScore: number;
+  mainIssue: string | null;
 };
 
 export type WorkoutState = {
@@ -36,6 +37,7 @@ export type WorkoutState = {
 export type LiveNumbers = {
   totalReps: number;
   formScore: number;
+  mainIssue: string | null;
 };
 
 export function startWorkout(plan: WorkoutPlan, now: number): WorkoutState {
@@ -85,7 +87,7 @@ export function endWorkout(state: WorkoutState, live: LiveNumbers, now: number):
   const partialReps = repsInCurrentSet(state, live.totalReps);
   const completedSets =
     partialReps > 0
-      ? [...state.completedSets, makeSet(state, partialReps, live.formScore, now)]
+      ? [...state.completedSets, makeSet(state, partialReps, live, now)]
       : state.completedSets;
 
   return { ...state, phase: "complete", completedSets, restEndsAt: null, endedAt: now };
@@ -116,7 +118,7 @@ export function elapsedSeconds(state: WorkoutState, now: number): number {
 // ---------- helpers ----------
 
 function finishSet(state: WorkoutState, live: LiveNumbers, now: number): WorkoutState {
-  const finished = makeSet(state, state.plan.repsPerSet, live.formScore, now);
+  const finished = makeSet(state, state.plan.repsPerSet, live, now);
   const completedSets = [...state.completedSets, finished];
   const wasLastSet = completedSets.length >= state.plan.sets;
 
@@ -139,11 +141,12 @@ function startNextSet(state: WorkoutState, live: LiveNumbers, now: number): Work
   };
 }
 
-function makeSet(state: WorkoutState, reps: number, formScore: number, now: number): CompletedSet {
+function makeSet(state: WorkoutState, reps: number, live: LiveNumbers, now: number): CompletedSet {
   return {
     setNumber: state.currentSet,
     reps,
     durationSec: Math.round((now - state.setStartedAt) / 1000),
-    formScore,
+    formScore: live.formScore,
+    mainIssue: live.mainIssue,
   };
 }

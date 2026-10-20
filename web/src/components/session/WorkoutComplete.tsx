@@ -1,7 +1,12 @@
 /**
  * WorkoutComplete — the summary shown after the last set (or End workout).
+ * Saves the workout to the user's history straight away.
  */
+"use client";
+
 import Link from "next/link";
+import { useSaveWorkout } from "@/hooks/useSaveWorkout";
+import { SaveStatusBanner } from "./SaveStatusBanner";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { getExercise } from "@/lib/exercises";
 import { formatTime } from "@/lib/workout/formatTime";
@@ -15,6 +20,7 @@ type Props = {
 export function WorkoutComplete({ result }: Props) {
   const exercise = getExercise(result.plan.exerciseId);
   const sets = result.completedSets;
+  const save = useSaveWorkout(result);
 
   const totalReps = sets.reduce((sum, set) => sum + set.reps, 0);
   const averageForm =
@@ -39,6 +45,8 @@ export function WorkoutComplete({ result }: Props) {
           </span>
           <h1 className="font-display text-4xl font-bold tracking-tight">Nice work on {exercise.name}!</h1>
         </div>
+
+        <SaveStatusBanner status={save.status} newBadges={save.newBadges} onRetry={save.retry} />
 
         {/* Big numbers */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4">
@@ -89,6 +97,12 @@ export function WorkoutComplete({ result }: Props) {
           >
             Repeat this workout
           </a>
+          <Link
+            href="/history"
+            className="flex h-12 items-center rounded-xl border border-line-strong bg-raised px-6 font-semibold hover:bg-line"
+          >
+            View history
+          </Link>
         </div>
       </main>
     </div>

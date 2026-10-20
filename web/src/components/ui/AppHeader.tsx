@@ -11,6 +11,7 @@ import { LogoMark } from "./LogoMark";
 
 const LINKS = [
   { href: "/workout", label: "Train" },
+  { href: "/history", label: "History" },
   { href: "/profile", label: "Profile" },
 ];
 

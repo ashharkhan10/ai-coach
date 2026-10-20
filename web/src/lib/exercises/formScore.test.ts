@@ -20,6 +20,20 @@ describe("FormScore", () => {
     expect(score.value).toBe(50);
   });
 
+  it("remembers the most common issue", () => {
+    const score = new FormScore();
+    score.record("Leaning forward");
+    score.record("Hips sagging");
+    score.record("Leaning forward");
+    expect(score.mainIssue).toBe("Leaning forward");
+  });
+
+  it("has no main issue when form is always good", () => {
+    const score = new FormScore();
+    score.record(null);
+    expect(score.mainIssue).toBeNull();
+  });
+
   it("goes back to 100 after reset", () => {
     const score = new FormScore();
     score.record("Leaning forward");

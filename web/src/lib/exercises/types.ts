@@ -14,6 +14,8 @@ export type ExerciseResult = {
   issue: string | null;
   /** 0–100, how clean the form has been in the current set. */
   formScore: number;
+  /** The most common form problem in the current set, or null. */
+  mainIssue: string | null;
 };
 
 /** Every exercise (squat, push-up, ...) must have these functions. */

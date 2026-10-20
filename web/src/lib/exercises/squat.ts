@@ -58,6 +58,6 @@ export class SquatDetector implements ExerciseDetector {
   }
 
   private result(angles: Record<string, number>, status: string, issue: string | null): ExerciseResult {
-    return { reps: this.counter.count, angles, status, issue, formScore: this.form.value };
+    return { reps: this.counter.count, angles, status, issue, formScore: this.form.value, mainIssue: this.form.mainIssue };
   }
 }

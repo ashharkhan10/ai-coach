@@ -12,7 +12,7 @@ import {
 
 const plan: WorkoutPlan = { exerciseId: "squat", sets: 2, repsPerSet: 3 };
 const START = 1_000_000; // a fake clock time in ms
-const live = (totalReps: number, formScore = 90) => ({ totalReps, formScore });
+const live = (totalReps: number, formScore = 90) => ({ totalReps, formScore, mainIssue: null });
 
 describe("workout flow", () => {
   it("starts on set 1, active", () => {
@@ -31,7 +31,7 @@ describe("workout flow", () => {
     const state = advance(startWorkout(plan, START), live(3), START + 10_000);
     expect(state.phase).toBe("resting");
     expect(state.completedSets).toEqual([
-      { setNumber: 1, reps: 3, durationSec: 10, formScore: 90 },
+      { setNumber: 1, reps: 3, durationSec: 10, formScore: 90, mainIssue: null },
     ]);
     expect(restSecondsLeft(state, START + 10_000)).toBe(REST_SECONDS);
   });
@@ -65,7 +65,7 @@ describe("workout flow", () => {
     const state = endWorkout(startWorkout(plan, START), live(2), START + 8000);
     expect(state.phase).toBe("complete");
     expect(state.completedSets).toEqual([
-      { setNumber: 1, reps: 2, durationSec: 8, formScore: 90 },
+      { setNumber: 1, reps: 2, durationSec: 8, formScore: 90, mainIssue: null },
     ]);
   });
 
