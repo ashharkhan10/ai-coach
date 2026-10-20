@@ -1,0 +1,17 @@
+# Secrets — never upload these
+.env
+.env.local
+
+# Python
+api/venv/
+__pycache__/
+*.pyc
+
+# Node / Next.js
+web/node_modules/
+web/.next/
+
+# Editor and system files
+.vscode/
+.DS_Store
+Thumbs.db
