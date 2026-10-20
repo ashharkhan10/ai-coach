@@ -6,6 +6,7 @@
 "use client";
 
 import { useState } from "react";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { ExerciseCard } from "@/components/setup/ExerciseCard";
 import { PlanSummary } from "@/components/setup/PlanSummary";
@@ -13,6 +14,14 @@ import { EXERCISES, getExercise } from "@/lib/exercises";
 import { DEFAULT_PLAN, type WorkoutPlan } from "@/lib/workout/plan";
 
 export default function WorkoutSetupPage() {
+  return (
+    <RequireAuth>
+      <WorkoutSetup />
+    </RequireAuth>
+  );
+}
+
+function WorkoutSetup() {
   const [plan, setPlan] = useState<WorkoutPlan>(DEFAULT_PLAN);
   const selected = getExercise(plan.exerciseId);
 

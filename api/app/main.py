@@ -2,19 +2,31 @@
 Entry point of the backend.
 
 This file creates the FastAPI app, allows the frontend to talk to it (CORS),
-and plugs in all the route files.
+creates the database tables, and plugs in all the route files.
 
 Run it with:
     uvicorn app.main:app --reload
 """
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app import models  # noqa: F401  (loads every table so create_all sees them)
 from app.config import FRONTEND_URL
-from app.routes import health
+from app.database import Base, engine
+from app.routes import auth, health, profile
 
-app = FastAPI(title="AI Coach API")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # On startup: create any tables that don't exist yet.
+    Base.metadata.create_all(engine)
+    yield
+
+
+app = FastAPI(title="AI Coach API", lifespan=lifespan)
 
 # Allow the Next.js frontend to call this backend from the browser.
 app.add_middleware(
@@ -27,3 +39,5 @@ app.add_middleware(
 
 # Plug in each group of routes.
 app.include_router(health.router)
+app.include_router(auth.router)
+app.include_router(profile.router)

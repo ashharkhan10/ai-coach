@@ -7,6 +7,7 @@
  * inside <Suspense> and shows "Loading…" for a moment.
  */
 import { Suspense } from "react";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 import { LiveSession } from "@/components/session/LiveSession";
 import { parsePlan } from "@/lib/workout/plan";
 
@@ -26,5 +27,9 @@ async function SessionFromAddress({ searchParams }: { searchParams: SearchParams
   // The key makes React start fresh if the plan changes.
   const key = `${plan.exerciseId}-${plan.sets}-${plan.repsPerSet}`;
 
-  return <LiveSession key={key} plan={plan} />;
+  return (
+    <RequireAuth>
+      <LiveSession key={key} plan={plan} />
+    </RequireAuth>
+  );
 }

@@ -1,3 +1,8 @@
 fastapi
 uvicorn[standard]
 python-dotenv
+sqlalchemy
+psycopg[binary]
+pyjwt
+pwdlib[argon2]
+email-validator
