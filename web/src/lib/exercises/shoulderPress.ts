@@ -24,6 +24,10 @@ export class ShoulderPressDetector implements ExerciseDetector {
     this.form.reset();
   }
 
+  startSet() {
+    this.form.reset();
+  }
+
   process(landmarks: NormalizedLandmark[]): ExerciseResult {
     const side = pickVisibleSide(landmarks, "elbow");
     const [shoulder, elbow, wrist, hip, knee] = [

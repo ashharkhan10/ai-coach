@@ -12,12 +12,16 @@ export type ExerciseResult = {
   status: string;
   /** A form problem in plain words, or null if form is good. Used by the coach. */
   issue: string | null;
-  /** 0–100, how clean the form has been so far. */
+  /** 0–100, how clean the form has been in the current set. */
   formScore: number;
 };
 
-/** Every exercise (squat, push-up, ...) must have these two functions. */
+/** Every exercise (squat, push-up, ...) must have these functions. */
 export interface ExerciseDetector {
+  /** Looks at one camera frame and returns the latest numbers. */
   process(landmarks: NormalizedLandmark[]): ExerciseResult;
+  /** Called when a new set begins: restarts the form score for that set. */
+  startSet(): void;
+  /** Clears everything (reps and form score). */
   reset(): void;
 }

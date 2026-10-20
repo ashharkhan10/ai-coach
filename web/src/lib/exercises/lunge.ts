@@ -26,6 +26,10 @@ export class LungeDetector implements ExerciseDetector {
     this.form.reset();
   }
 
+  startSet() {
+    this.form.reset();
+  }
+
   process(landmarks: NormalizedLandmark[]): ExerciseResult {
     const front = this.pickFrontLeg(landmarks);
     const [shoulder, hip, knee, ankle] = [front.shoulder, front.hip, front.knee, front.ankle].map(

@@ -4,10 +4,12 @@
  * The <video> shows the camera. The <canvas> sits exactly on top of it
  * and is where the skeleton is drawn. Both are mirrored so it feels
  * like looking in a mirror.
+ *
+ * Anything passed as children (like the rest timer) appears over the camera.
  */
 "use client";
 
-import type { RefObject } from "react";
+import type { ReactNode, RefObject } from "react";
 import type { CameraStatus } from "@/hooks/useCamera";
 import type { TrackingStatus } from "@/hooks/usePoseTracking";
 
@@ -17,11 +19,23 @@ type Props = {
   cameraStatus: CameraStatus;
   trackingStatus: TrackingStatus;
   formStatus?: string;
+  hasIssue?: boolean;
+  children?: ReactNode;
 };
 
-export function CameraView({ videoRef, canvasRef, cameraStatus, trackingStatus, formStatus }: Props) {
+export function CameraView({
+  videoRef,
+  canvasRef,
+  cameraStatus,
+  trackingStatus,
+  formStatus,
+  hasIssue,
+  children,
+}: Props) {
+  const showFormBadge = formStatus && trackingStatus === "tracking";
+
   return (
-    <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-[#23262B] bg-[#15171A]">
+    <div className="relative aspect-video w-full overflow-hidden rounded-3xl border border-line bg-[#15171A]">
       <video
         ref={videoRef}
         playsInline
@@ -35,15 +49,21 @@ export function CameraView({ videoRef, canvasRef, cameraStatus, trackingStatus, 
 
       {/* Top-left badges */}
       <div className="absolute left-4 top-4 flex flex-wrap gap-2">
-        {formStatus && trackingStatus === "tracking" && (
-          <span className="rounded-lg bg-black/80 px-3 py-2 text-sm font-semibold text-[#C6F432]">
+        {showFormBadge && (
+          <span
+            className={`rounded-lg bg-ground/80 px-3 py-2 text-sm font-semibold ${
+              hasIssue ? "text-warn" : "text-accent"
+            }`}
+          >
             {formStatus}
           </span>
         )}
-        <span className="rounded-lg bg-black/80 px-3 py-2 text-sm text-[#D4D7DC]">
+        <span className="rounded-lg bg-ground/80 px-3 py-2 text-sm text-muted">
           {getStatusMessage(cameraStatus, trackingStatus)}
         </span>
       </div>
+
+      {children}
     </div>
   );
 }

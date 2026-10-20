@@ -24,6 +24,10 @@ export class SquatDetector implements ExerciseDetector {
     this.form.reset();
   }
 
+  startSet() {
+    this.form.reset();
+  }
+
   process(landmarks: NormalizedLandmark[]): ExerciseResult {
     const side = pickVisibleSide(landmarks, "knee");
     const [shoulder, hip, knee, ankle] = [side.shoulder, side.hip, side.knee, side.ankle].map(

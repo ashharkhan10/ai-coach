@@ -15,6 +15,8 @@ export type ExerciseId = "squat" | "pushup" | "curl" | "press" | "lunge";
 export type Exercise = {
   id: ExerciseId;
   name: string;
+  /** What the app checks, shown on the setup card. */
+  tracks: string;
   /** Short tip on how to stand in front of the camera. */
   cameraTip: string;
   createDetector: () => ExerciseDetector;
@@ -24,30 +26,35 @@ export const EXERCISES: Exercise[] = [
   {
     id: "squat",
     name: "Squats",
+    tracks: "Knee angle, back angle, depth",
     cameraTip: "Stand sideways so your whole body is visible.",
     createDetector: () => new SquatDetector(),
   },
   {
     id: "pushup",
     name: "Push-ups",
+    tracks: "Elbow angle, body line, hips",
     cameraTip: "Put the camera at your side, at floor level.",
     createDetector: () => new PushUpDetector(),
   },
   {
     id: "curl",
     name: "Biceps curls",
+    tracks: "Elbow angle, swing, elbow position",
     cameraTip: "Face the camera with your upper body in view.",
     createDetector: () => new BicepsCurlDetector(),
   },
   {
     id: "press",
     name: "Shoulder press",
+    tracks: "Arm extension, back arch",
     cameraTip: "Stand sideways with arms and hips in view.",
     createDetector: () => new ShoulderPressDetector(),
   },
   {
     id: "lunge",
     name: "Lunges",
+    tracks: "Front knee, torso, balance",
     cameraTip: "Stand sideways so both legs are visible.",
     createDetector: () => new LungeDetector(),
   },
