@@ -1,5 +1,5 @@
 /**
- * ExerciseStats — the side panel with the rep count and angles.
+ * ExerciseStats — the side panel: rep count, form score, angles and tips.
  */
 import type { ExerciseResult } from "@/lib/exercises/types";
 
@@ -11,6 +11,7 @@ type Props = {
 
 export function ExerciseStats({ exerciseName, result, onReset }: Props) {
   const reps = result?.reps ?? 0;
+  const formScore = result?.formScore ?? 100;
   const angles = result?.angles ?? {};
 
   return (
@@ -24,19 +25,26 @@ export function ExerciseStats({ exerciseName, result, onReset }: Props) {
         <span className="text-[#A3A8B0]">reps</span>
       </div>
 
-      {/* Angles */}
+      {/* Form score + angles */}
       <div className="flex flex-col gap-3 rounded-2xl border border-[#23262B] bg-[#17191D] p-6">
         <span className="text-xs font-semibold uppercase tracking-widest text-[#8B9099]">
           Form check
         </span>
+
+        <div className="flex items-center justify-between">
+          <span>Form score</span>
+          <span className={`text-xl font-bold ${scoreColor(formScore)}`}>{formScore}/100</span>
+        </div>
+
         {Object.entries(angles).map(([label, value]) => (
           <div key={label} className="flex items-center justify-between">
             <span>{label}</span>
             <span className="text-xl font-bold">{value}°</span>
           </div>
         ))}
-        {Object.keys(angles).length === 0 && (
-          <span className="text-sm text-[#8B9099]">Waiting for your body…</span>
+
+        {result?.issue && (
+          <p className="rounded-lg bg-[#2E2210] px-3 py-2 text-sm text-[#FFB35C]">{result.issue}</p>
         )}
       </div>
 
@@ -45,8 +53,15 @@ export function ExerciseStats({ exerciseName, result, onReset }: Props) {
         onClick={onReset}
         className="h-12 rounded-xl border border-[#2E3238] bg-[#1D2024] font-semibold hover:bg-[#23262B]"
       >
-        Reset reps
+        Reset
       </button>
     </aside>
   );
+}
+
+/** Green for good, orange for okay, red for poor. */
+function scoreColor(score: number): string {
+  if (score >= 80) return "text-[#C6F432]";
+  if (score >= 50) return "text-[#FFB35C]";
+  return "text-[#FF8A80]";
 }

@@ -27,6 +27,13 @@ export function usePoseTracking({ videoRef, canvasRef, cameraReady, detector }: 
   const [status, setStatus] = useState<TrackingStatus>("loading");
   const [result, setResult] = useState<ExerciseResult | null>(null);
 
+  // Keep the current detector in a ref, so switching exercise
+  // does NOT reload the pose model.
+  const detectorRef = useRef(detector);
+  useEffect(() => {
+    detectorRef.current = detector;
+  }, [detector]);
+
   // Remember the last result so we only re-render when something changed.
   const lastResultKey = useRef("");
 
@@ -57,7 +64,7 @@ export function usePoseTracking({ videoRef, canvasRef, cameraReady, detector }: 
 
         if (body) {
           drawSkeleton(canvas, body);
-          updateResult(detector.process(body));
+          updateResult(detectorRef.current.process(body));
           setStatus("tracking");
         } else {
           clearCanvas(canvas);
@@ -94,7 +101,7 @@ export function usePoseTracking({ videoRef, canvasRef, cameraReady, detector }: 
       cancelAnimationFrame(frameId);
       landmarker?.close();
     };
-  }, [cameraReady, videoRef, canvasRef, detector]);
+  }, [cameraReady, videoRef, canvasRef]);
 
   return { status, result };
 }

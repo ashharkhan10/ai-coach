@@ -1,90 +1,59 @@
 /**
- * Squat detector — counts squat reps and checks depth.
+ * Squat detector.
  *
- * How a rep is counted:
- *   1. Knee angle goes BELOW 100°  → user is "down"
- *   2. Knee angle goes ABOVE 160° → user is "up" again → +1 rep
+ * Rep:   knee angle below 100° (down) → above 160° (up) = 1 rep
+ * Form:  back angle below 130° = leaning too far forward
  */
 import type { NormalizedLandmark } from "@mediapipe/tasks-vision";
 import { calculateAngle } from "../pose/angle";
-import { LANDMARK } from "../pose/landmarks";
+import { areVisible, pickVisibleSide } from "../pose/bodySide";
+import { FormScore } from "./formScore";
+import { RepCounter } from "./repCounter";
 import type { ExerciseDetector, ExerciseResult } from "./types";
 
 const DOWN_ANGLE = 100;
 const UP_ANGLE = 160;
-const MIN_VISIBILITY = 0.6;
-
-type Stage = "up" | "down" | null;
+const MIN_BACK_ANGLE = 130;
 
 export class SquatDetector implements ExerciseDetector {
-  private reps = 0;
-  private stage: Stage = null;
+  private counter = new RepCounter({ turnAt: DOWN_ANGLE, finishAt: UP_ANGLE });
+  private form = new FormScore();
 
   reset() {
-    this.reps = 0;
-    this.stage = null;
+    this.counter.reset();
+    this.form.reset();
   }
 
   process(landmarks: NormalizedLandmark[]): ExerciseResult {
-    // Use whichever side of the body the camera sees better.
-    const side = this.pickVisibleSide(landmarks);
-
-    const shoulder = landmarks[side.shoulder];
-    const hip = landmarks[side.hip];
-    const knee = landmarks[side.knee];
-    const ankle = landmarks[side.ankle];
+    const side = pickVisibleSide(landmarks, "knee");
+    const [shoulder, hip, knee, ankle] = [side.shoulder, side.hip, side.knee, side.ankle].map(
+      (i) => landmarks[i],
+    );
 
     const kneeAngle = calculateAngle(hip, knee, ankle);
     const backAngle = calculateAngle(shoulder, hip, knee);
+    const angles = { "Knee angle": Math.round(kneeAngle), "Back angle": Math.round(backAngle) };
 
-    const legVisible = [hip, knee, ankle].every((p) => p.visibility >= MIN_VISIBILITY);
-
-    if (legVisible) {
-      this.updateRepCount(kneeAngle);
+    if (!areVisible(landmarks, [side.hip, side.knee, side.ankle])) {
+      return this.result(angles, "SHOW YOUR LEGS", null);
     }
 
-    return {
-      reps: this.reps,
-      angles: {
-        "Knee angle": Math.round(kneeAngle),
-        "Back angle": Math.round(backAngle),
-      },
-      status: legVisible ? this.getDepthStatus(kneeAngle) : "SHOW YOUR LEGS",
-    };
+    this.counter.update(kneeAngle);
+
+    const issue =
+      backAngle < MIN_BACK_ANGLE ? "Keep your chest up — you're leaning too far forward." : null;
+    this.form.record(issue);
+
+    return this.result(angles, this.depthLabel(kneeAngle), issue);
   }
 
-  private updateRepCount(kneeAngle: number) {
-    if (kneeAngle < DOWN_ANGLE) {
-      this.stage = "down";
-    }
-    if (kneeAngle > UP_ANGLE && this.stage === "down") {
-      this.stage = "up";
-      this.reps += 1;
-    }
-  }
-
-  private getDepthStatus(kneeAngle: number): string {
-    if (this.stage === "down" && kneeAngle <= DOWN_ANGLE) return "GOOD DEPTH";
-    if (kneeAngle < UP_ANGLE) return "GO LOWER";
+  private depthLabel(kneeAngle: number): string {
+    if (kneeAngle <= DOWN_ANGLE) return "GOOD DEPTH";
+    if (kneeAngle < UP_ANGLE) return this.counter.isMidRep() ? "STAND UP" : "GO LOWER";
     return "STANDING";
   }
 
-  private pickVisibleSide(landmarks: NormalizedLandmark[]) {
-    const leftScore = landmarks[LANDMARK.LEFT_KNEE].visibility;
-    const rightScore = landmarks[LANDMARK.RIGHT_KNEE].visibility;
-
-    return leftScore >= rightScore
-      ? {
-          shoulder: LANDMARK.LEFT_SHOULDER,
-          hip: LANDMARK.LEFT_HIP,
-          knee: LANDMARK.LEFT_KNEE,
-          ankle: LANDMARK.LEFT_ANKLE,
-        }
-      : {
-          shoulder: LANDMARK.RIGHT_SHOULDER,
-          hip: LANDMARK.RIGHT_HIP,
-          knee: LANDMARK.RIGHT_KNEE,
-          ankle: LANDMARK.RIGHT_ANKLE,
-        };
+  private result(angles: Record<string, number>, status: string, issue: string | null): ExerciseResult {
+    return { reps: this.counter.count, angles, status, issue, formScore: this.form.value };
   }
 }
