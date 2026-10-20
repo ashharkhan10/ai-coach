@@ -31,3 +31,8 @@ JWT_SECRET = _required("JWT_SECRET")
 
 # How long a login lasts before the user must log in again.
 TOKEN_EXPIRE_DAYS = 7
+
+# Groq AI (voice coach + workout plans). Optional: without it, the app
+# still works and the coach falls back to simple built-in tips.
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")

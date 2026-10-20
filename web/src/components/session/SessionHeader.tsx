@@ -1,18 +1,29 @@
 /**
  * SessionHeader — top bar of the live session:
- * LIVE badge, exercise, plan, timer and End workout button.
+ * LIVE badge, exercise, plan, timer, mute and End workout button.
  */
 import { formatTime } from "@/lib/workout/formatTime";
+import { MuteButton } from "./MuteButton";
 
 type Props = {
   exerciseName: string;
   sets: number;
   repsPerSet: number;
   elapsedSeconds: number;
+  muted: boolean;
+  onToggleMute: () => void;
   onEnd: () => void;
 };
 
-export function SessionHeader({ exerciseName, sets, repsPerSet, elapsedSeconds, onEnd }: Props) {
+export function SessionHeader({
+  exerciseName,
+  sets,
+  repsPerSet,
+  elapsedSeconds,
+  muted,
+  onToggleMute,
+  onEnd,
+}: Props) {
   return (
     <header className="flex flex-wrap items-center justify-between gap-4 border-b border-line px-6 py-4 lg:px-8">
       <div className="flex flex-wrap items-center gap-4">
@@ -30,6 +41,7 @@ export function SessionHeader({ exerciseName, sets, repsPerSet, elapsedSeconds, 
         <span className="font-display text-2xl font-bold tabular-nums">
           {formatTime(elapsedSeconds)}
         </span>
+        <MuteButton muted={muted} onToggle={onToggleMute} />
         <button
           type="button"
           onClick={onEnd}

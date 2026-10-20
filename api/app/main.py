@@ -16,7 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app import models  # noqa: F401  (loads every table so create_all sees them)
 from app.config import FRONTEND_URL
 from app.database import Base, engine
-from app.routes import auth, health, profile, workouts
+from app.routes import auth, coach, health, plans, profile, workouts
 
 
 @asynccontextmanager
@@ -42,3 +42,5 @@ app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(profile.router)
 app.include_router(workouts.router)
+app.include_router(coach.router)
+app.include_router(plans.router)

@@ -2,7 +2,7 @@
  * ActiveSession — the live workout screen while the user is exercising.
  *
  * Connects the pieces:
- *   camera → pose tracking → exercise detector → workout clock → screen
+ *   camera → pose tracking → exercise detector → workout clock → screen + voice coach
  *
  * When the workout is complete it calls onFinish with the results.
  */
@@ -11,6 +11,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useCamera } from "@/hooks/useCamera";
 import { usePoseTracking } from "@/hooks/usePoseTracking";
+import { useVoiceCoach } from "@/hooks/useVoiceCoach";
 import { useWorkout } from "@/hooks/useWorkout";
 import { getExercise } from "@/lib/exercises";
 import type { WorkoutPlan } from "@/lib/workout/plan";
@@ -22,6 +23,7 @@ import {
   type WorkoutState,
 } from "@/lib/workout/workoutState";
 import { CameraView } from "./CameraView";
+import { CoachCaption } from "./CoachCaption";
 import { FormCheckCard } from "./FormCheckCard";
 import { RestOverlay } from "./RestOverlay";
 import { SessionHeader } from "./SessionHeader";
@@ -48,6 +50,7 @@ export function ActiveSession({ plan, onFinish }: Props) {
   });
   const workout = useWorkout(plan, result, detector);
   const { state, now } = workout;
+  const coach = useVoiceCoach({ state, result, now });
 
   // Tell the parent page when the workout is over.
   useEffect(() => {
@@ -68,6 +71,8 @@ export function ActiveSession({ plan, onFinish }: Props) {
         sets={plan.sets}
         repsPerSet={plan.repsPerSet}
         elapsedSeconds={elapsedSeconds(state, now)}
+        muted={coach.muted}
+        onToggleMute={coach.toggleMute}
         onEnd={workout.endWorkout}
       />
 
@@ -81,6 +86,7 @@ export function ActiveSession({ plan, onFinish }: Props) {
             formStatus={result?.status}
             hasIssue={Boolean(result?.issue)}
           >
+            {!isResting && <CoachCaption text={coach.caption} />}
             {isResting && (
               <RestOverlay
                 secondsLeft={restSecondsLeft(state, now)}
