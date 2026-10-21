@@ -10,6 +10,9 @@ import { useState, type FormEvent } from "react";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { TextField } from "@/components/ui/TextField";
 import { useAuth } from "@/hooks/useAuth";
+import { ApiError } from "@/lib/api/client";
+
+const ALREADY_EXISTS = 409; // the backend's answer when the email is already registered
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -21,11 +24,13 @@ export function SignupForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [alreadyExists, setAlreadyExists] = useState(false);
   const [busy, setBusy] = useState(false);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
+    setAlreadyExists(false);
 
     if (password.length < MIN_PASSWORD_LENGTH) {
       setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
@@ -37,6 +42,7 @@ export function SignupForm() {
       await signup(email, password, name);
       router.push("/profile");
     } catch (err) {
+      setAlreadyExists(err instanceof ApiError && err.status === ALREADY_EXISTS);
       setError(err instanceof Error ? err.message : "Sign up failed.");
       setBusy(false);
     }
@@ -77,6 +83,14 @@ export function SignupForm() {
       />
 
       <ErrorMessage message={error} />
+      {alreadyExists && (
+        <Link
+          href="/login"
+          className="flex h-11 items-center justify-center rounded-xl border border-line-strong bg-raised font-semibold hover:bg-line"
+        >
+          Log in instead
+        </Link>
+      )}
 
       <button
         type="submit"

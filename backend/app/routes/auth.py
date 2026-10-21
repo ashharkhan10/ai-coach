@@ -3,6 +3,7 @@ Sign up and log in.
 
 POST /auth/signup  → create an account, returns a token
 POST /auth/login   → check email + password, returns a token
+                     (404 if there is no account, 401 if the password is wrong)
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -38,9 +39,14 @@ def signup(data: SignupRequest, db: Session = Depends(get_db)):
 def login(data: LoginRequest, db: Session = Depends(get_db)):
     user = _find_by_email(db, data.email.lower())
 
-    # Same message for both cases, so nobody can guess which emails exist.
-    if user is None or not verify_password(data.password, user.password_hash):
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Wrong email or password.")
+    if user is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail="No account found with this email. Please create an account first.",
+        )
+
+    if not verify_password(data.password, user.password_hash):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Wrong password. Please try again.")
 
     return AuthResponse(token=create_token(user.id), user=UserOut.model_validate(user))
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_OPTIONS, problemWith, sortWeekdays, toggle } from "./planOptions";
+import { DEFAULT_OPTIONS, SPLITS, problemWith, sortWeekdays, toggle } from "./planOptions";
 
 describe("toggle", () => {
   it("adds a missing item", () => {
@@ -33,5 +33,16 @@ describe("problemWith", () => {
 
   it("needs at least one exercise", () => {
     expect(problemWith({ ...DEFAULT_OPTIONS, exercises: [] })).not.toBeNull();
+  });
+});
+
+describe("SPLITS", () => {
+  it("includes Push / Pull / Legs", () => {
+    expect(SPLITS.map((s) => s.value)).toContain("push_pull_legs");
+  });
+
+  it("starts with letting the AI choose", () => {
+    expect(DEFAULT_OPTIONS.split).toBe("auto");
+    expect(SPLITS[0].value).toBe("auto");
   });
 });

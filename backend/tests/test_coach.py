@@ -113,3 +113,50 @@ def test_plan_with_wrong_days_or_exercises_is_caught():
     mistakes = plan_mistakes(plan, options)
     assert any("days were" in m for m in mistakes)
     assert any("pushup" in m for m in mistakes)
+
+
+# ---------- workout splits ----------
+
+
+def plan_with_days(*days):
+    """A plan where each day is a list of exercise ids, e.g. ["squat", "lunge"]."""
+    weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    return PlanContent.model_validate({
+        "title": "Test",
+        "summary": "Test plan.",
+        "days": [
+            {"day": weekdays[i], "focus": "Day", "exercises": [{"exercise": e, "sets": 3, "reps": 10} for e in day]}
+            for i, day in enumerate(days)
+        ],
+        "tip": "Rest well.",
+    })
+
+
+ALL_FIVE = ["squat", "pushup", "curl", "press", "lunge"]
+
+
+def test_split_defaults_to_auto():
+    assert PlanOptions(weekdays=["Monday", "Tuesday"], exercises=["squat"]).split == "auto"
+
+
+def test_split_is_described_to_the_ai():
+    options = PlanOptions(weekdays=["Monday", "Tuesday", "Wednesday"], exercises=ALL_FIVE, split="push_pull_legs")
+    assert "Push" in describe_options(options)
+
+
+def test_push_pull_legs_plan_is_accepted():
+    options = PlanOptions(weekdays=["Monday", "Tuesday", "Wednesday"], exercises=ALL_FIVE, split="push_pull_legs")
+    plan = plan_with_days(["pushup", "press"], ["curl"], ["squat", "lunge"])
+    assert plan_mistakes(plan, options) == []
+
+
+def test_push_day_with_squats_breaks_push_pull_legs():
+    options = PlanOptions(weekdays=["Monday", "Tuesday", "Wednesday"], exercises=ALL_FIVE, split="push_pull_legs")
+    plan = plan_with_days(["pushup", "squat"], ["curl"], ["squat", "lunge"])
+    assert any("push_pull_legs" in m for m in plan_mistakes(plan, options))
+
+
+def test_full_body_day_is_fine_in_full_body_split():
+    options = PlanOptions(weekdays=["Monday", "Tuesday"], exercises=ALL_FIVE, split="full_body")
+    plan = plan_with_days(["squat", "pushup", "curl"], ["lunge", "press"])
+    assert plan_mistakes(plan, options) == []

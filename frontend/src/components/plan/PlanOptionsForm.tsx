@@ -1,6 +1,6 @@
 /**
  * PlanOptionsForm — the choices before creating a plan:
- * training days, level, exercises and session length.
+ * training days, split, level, exercises and session length.
  */
 "use client";
 
@@ -8,6 +8,7 @@ import { useState } from "react";
 import { ChoiceChips } from "@/components/ui/ChoiceChips";
 import { EXERCISES } from "@/lib/exercises";
 import {
+  SPLITS,
   WEEKDAYS,
   problemWith,
   sortWeekdays,
@@ -40,6 +41,7 @@ export function PlanOptionsForm({ initial, busy, hasPlan, onSubmit }: Props) {
   const [options, setOptions] = useState(initial);
   const problem = problemWith(options);
   const dayCount = options.weekdays.length;
+  const chosenSplit = SPLITS.find((s) => s.value === options.split);
 
   return (
     <section className="flex flex-col gap-7 rounded-3xl border border-line bg-surface p-6 lg:p-8">
@@ -50,6 +52,16 @@ export function PlanOptionsForm({ initial, busy, hasPlan, onSubmit }: Props) {
         isSelected={(day) => options.weekdays.includes(day)}
         onClick={(day) => setOptions({ ...options, weekdays: sortWeekdays(toggle(options.weekdays, day)) })}
       />
+
+      <div className="flex flex-col gap-3">
+        <ChoiceChips
+          label="Workout split"
+          choices={SPLITS}
+          isSelected={(split) => options.split === split}
+          onClick={(split) => setOptions({ ...options, split })}
+        />
+        {chosenSplit && <p className="text-sm text-muted">{chosenSplit.description}</p>}
+      </div>
 
       <ChoiceChips
         label="Level"

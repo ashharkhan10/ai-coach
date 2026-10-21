@@ -35,6 +35,38 @@ LEVEL_RULES = {
 # How many exercises fit in a session.
 EXERCISES_PER_SESSION = {10: "1-2", 20: "2-3", 30: "3-4"}
 
+# Which exercises belong to each kind of training day.
+PUSH = {"pushup", "press"}
+PULL = {"curl"}
+LEGS = {"squat", "lunge"}
+UPPER = PUSH | PULL
+FULL = UPPER | LEGS
+
+# For each split: the day types it uses, and which exercises each day may contain.
+SPLIT_DAYS: dict[str, dict[str, set[str]]] = {
+    "full_body": {"Full body": FULL},
+    "upper_lower": {"Upper body": UPPER, "Lower body": LEGS},
+    "push_pull_legs": {"Push": PUSH, "Pull": PULL, "Legs": LEGS},
+    "ppl_upper_lower": {"Push": PUSH, "Pull": PULL, "Legs": LEGS, "Upper body": UPPER, "Lower body": LEGS},
+    "full_body_upper_lower": {"Full body": FULL, "Upper body": UPPER, "Lower body": LEGS},
+}
+
+# How each split should be laid out across the week.
+SPLIT_RULES = {
+    "auto": "Choose the best split for their number of days and goal.",
+    "full_body": "Every training day is Full body: mix upper-body and leg exercises.",
+    "upper_lower": "Alternate Upper body days (pushup, press, curl) and Lower body days (squat, lunge).",
+    "push_pull_legs": (
+        "Rotate Push (pushup, press), Pull (curl) and Legs (squat, lunge) days in that order, "
+        "starting again with Push if there are more than 3 days."
+    ),
+    "ppl_upper_lower": (
+        "Hybrid: Push, Pull, Legs, then Upper body and Lower body, in that order. "
+        "With fewer days, use the first ones."
+    ),
+    "full_body_upper_lower": "Mix Full body days with Upper body and Lower body days.",
+}
+
 SYSTEM_PROMPT = """You are AI Coach, an expert personal trainer. Create a safe, realistic
 weekly home-workout plan.
 
@@ -50,7 +82,9 @@ Reply with JSON only, in exactly this shape:
 }
 
 Exercise ids you may use: squat, pushup, curl, press, lunge.
-Follow the user's chosen days, exercises, level and session length EXACTLY.
+Follow the user's chosen days, split, exercises, level and session length EXACTLY.
+Use the split's day names as each day's "focus" (e.g. "Push", "Legs", "Upper body").
+If a day type has none of the user's allowed exercises, skip that day type.
 Spread muscle groups so the same area isn't worked hard on back-to-back days.
 If their recent form scores are low, use the lower end of the rep range."""
 
@@ -84,6 +118,7 @@ def describe_options(options: PlanOptions) -> str:
     return (
         f"Training days (use exactly these, in this order): {', '.join(options.weekdays)}\n"
         f"Allowed exercise ids (use only these): {', '.join(options.exercises)}\n"
+        f"Split: {SPLIT_RULES[options.split]}\n"
         f"Level: {options.level} → {LEVEL_RULES[options.level]}\n"
         f"Session length: about {options.minutes} minutes → "
         f"{EXERCISES_PER_SESSION[options.minutes]} exercises per day"
@@ -115,5 +150,13 @@ def plan_mistakes(plan: PlanContent, options: PlanOptions) -> list[str]:
         for item in day.exercises:
             if item.exercise not in allowed:
                 mistakes.append(f"{day.day} uses {item.exercise}, which wasn't chosen")
+
+    # Each day must fit one day type of the chosen split (e.g. a Push day has no squats).
+    day_types = SPLIT_DAYS.get(options.split)
+    if day_types:
+        for day in plan.days:
+            used = {item.exercise for item in day.exercises}
+            if not any(used <= group for group in day_types.values()):
+                mistakes.append(f"{day.day} mixes {sorted(used)}, which doesn't fit the {options.split} split")
 
     return mistakes

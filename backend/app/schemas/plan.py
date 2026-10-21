@@ -18,6 +18,16 @@ WEEK_ORDER = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 Level = Literal["beginner", "intermediate", "advanced"]
 SessionMinutes = Literal[10, 20, 30]
 
+# How the week is divided up. "auto" lets the AI decide.
+Split = Literal[
+    "auto",
+    "full_body",
+    "upper_lower",
+    "push_pull_legs",
+    "ppl_upper_lower",
+    "full_body_upper_lower",
+]
+
 
 # ---------- what the user picks ----------
 
@@ -25,6 +35,7 @@ SessionMinutes = Literal[10, 20, 30]
 class PlanOptions(BaseModel):
     weekdays: list[Weekday] = Field(min_length=2, max_length=6)  # also sets days per week
     level: Level = "beginner"
+    split: Split = "auto"
     exercises: list[ExerciseId] = Field(min_length=1, max_length=5)
     minutes: SessionMinutes = 20
 
